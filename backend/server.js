@@ -23,7 +23,21 @@ const server = http.createServer(app);
 initSocket(server);
 
 // Connect to MongoDB
-connectDB();
+connectDB().then(async () => {
+  // Auto-seed admin if no users exist
+  const User = require('./models/User');
+  const adminExists = await User.findOne({ role: 'admin' });
+  if (!adminExists) {
+    console.log('No admin found. Seeding default admin...');
+    await User.create({
+      name: 'Admin',
+      email: 'admin@taskmanager.com',
+      password: 'admin123',
+      role: 'admin',
+    });
+    console.log('Default admin created: admin@taskmanager.com / admin123');
+  }
+});
 
 // Setup Cron Jobs
 setupReminders();
