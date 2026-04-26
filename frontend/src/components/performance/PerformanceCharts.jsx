@@ -10,7 +10,7 @@ const COLORS = ['#eab308', '#3b82f6', '#22c55e', '#a855f7', '#6366f1'];
 const PRIORITY_COLORS = {
   High: '#ef4444',
   Medium: '#3b82f6',
-  Low: '#94a3b8'
+  Low: '#64748b'
 };
 
 const PerformanceCharts = () => {
@@ -102,17 +102,17 @@ const PerformanceCharts = () => {
               <AreaChart data={data.trendData}>
                 <defs>
                   <linearGradient id="colorTasks" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--primary-500)" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="var(--primary-500)" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                 <XAxis dataKey="date" stroke="var(--text-secondary)" fontSize={10} />
                 <YAxis stroke="var(--text-secondary)" fontSize={12} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: 'var(--secondary)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  contentStyle={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                 />
-                <Area type="monotone" dataKey="tasks" stroke="var(--primary-500)" strokeWidth={3} fillOpacity={1} fill="url(#colorTasks)" />
+                <Area type="monotone" dataKey="tasks" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorTasks)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -122,17 +122,41 @@ const PerformanceCharts = () => {
       {/* Productivity Chart */}
       <div className="glass-panel p-8 rounded-3xl border border-border-color shadow-sm">
         <h3 className="text-xl font-bold text-text-primary mb-6">Employee Task Completion</h3>
-        <div className="h-[300px]">
+        <div className="h-[350px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data.productivityData} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-              <XAxis type="number" stroke="var(--text-secondary)" fontSize={12} />
-              <YAxis dataKey="name" type="category" stroke="var(--text-secondary)" fontSize={12} width={100} />
+            <BarChart 
+              data={data.productivityData} 
+              layout="vertical"
+              margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+            >
+              <defs>
+                <linearGradient id="barGradient" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#6366f1" />
+                  <stop offset="100%" stopColor="#8b5cf6" />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+              <XAxis type="number" stroke="var(--text-secondary)" fontSize={12} axisLine={false} tickLine={false} />
+              <YAxis 
+                dataKey="name" 
+                type="category" 
+                stroke="var(--text-primary)" 
+                fontSize={13} 
+                width={100} 
+                axisLine={false}
+                tickLine={false}
+              />
               <Tooltip 
                 cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                contentStyle={{ backgroundColor: 'var(--secondary)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                contentStyle={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', color: 'var(--text-primary)' }}
               />
-              <Bar dataKey="completed" fill="var(--primary-500)" radius={[0, 4, 4, 0]} barSize={20} />
+              <Bar 
+                dataKey="completed" 
+                fill="url(#barGradient)" 
+                radius={[0, 10, 10, 0]} 
+                barSize={32}
+                animationDuration={1500}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
