@@ -22,23 +22,6 @@ const server = http.createServer(app);
 // Initialize Socket.io
 initSocket(server);
 
-// Connect to MongoDB
-connectDB().then(async () => {
-  // Auto-seed admin if no users exist
-  const User = require('./models/User');
-  const adminExists = await User.findOne({ role: 'admin' });
-  if (!adminExists) {
-    console.log('No admin found. Seeding default admin...');
-    await User.create({
-      name: 'Admin',
-      email: 'admin@taskmanager.com',
-      password: 'admin123',
-      role: 'admin',
-    });
-    console.log('Default admin created: admin@taskmanager.com / admin123');
-  }
-});
-
 // Setup Cron Jobs
 setupReminders();
 
@@ -83,6 +66,40 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+
+const startServer = async () => {
+  try {
+    // 1. Connect to MongoDB
+    await connectDB();
+    console.log('✅ Database connected successfully');
+
+    // 2. Auto-seed Admin
+    const User = require('./models/User');
+    console.log('🔍 Checking for admin account...');
+    const adminExists = await User.findOne({ role: 'admin' });
+    
+    if (!adminExists) {
+      console.log('⚡ No admin found. Creating default admin...');
+      await User.create({
+        name: 'Admin',
+        email: 'admin@taskmanager.com',
+        password: 'admin123',
+        role: 'admin',
+      });
+      console.log('✨ Default admin created: admin@taskmanager.com / admin123');
+    } else {
+      console.log('✅ Admin account already exists:', adminExists.email);
+    }
+
+    // 3. Start Listening
+    server.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
+  } catch (error) {
+    console.error('❌ CRITICAL: Server failed to start:', error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
