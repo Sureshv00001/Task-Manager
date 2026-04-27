@@ -101,3 +101,23 @@ exports.markAsRead = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// Upload file for report
+exports.uploadReportFile = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const fileData = {
+      name: req.file.originalname,
+      url: `/uploads/${req.file.filename}`,
+      fileType: req.file.mimetype,
+    };
+
+    res.status(200).json(fileData);
+  } catch (error) {
+    console.error('Upload report file error:', error);
+    res.status(500).json({ message: 'Server error during upload' });
+  }
+};

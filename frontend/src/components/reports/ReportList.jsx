@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { format } from 'date-fns';
-import { FileText, User as UserIcon, Calendar, Check, ExternalLink } from 'lucide-react';
+import { FileText, User as UserIcon, Calendar, Check, ExternalLink, Paperclip, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const ReportList = () => {
   const [reports, setReports] = useState([]);
@@ -81,6 +83,31 @@ const ReportList = () => {
                   "{report.content}"
                 </p>
               </div>
+
+              {/* Attachments Section */}
+              {report.attachments && report.attachments.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <Paperclip size={10} /> Attachments ({report.attachments.length})
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {report.attachments.map((file, idx) => (
+                      <a
+                        key={idx}
+                        href={`${API_BASE_URL}${file.url}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 bg-secondary/50 hover:bg-secondary border border-border-color px-2.5 py-1.5 rounded-lg text-[10px] text-text-primary transition-all group"
+                        title={file.name}
+                      >
+                        <FileText size={12} className="text-primary-500" />
+                        <span className="max-w-[120px] truncate">{file.name}</span>
+                        <Download size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="flex justify-between items-center text-[10px] text-text-secondary font-medium">
                 <span>Tagged Manager: {report.manager.name}</span>
