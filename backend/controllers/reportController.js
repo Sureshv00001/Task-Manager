@@ -24,16 +24,22 @@ exports.submitReport = async (req, res) => {
       createdAt: { $gte: startOfDay, $lte: endOfDay }
     });
 
+    let report;
     if (existingReport) {
-      return res.status(400).json({ message: 'You have already submitted a report for today.' });
+      // Update existing report
+      existingReport.content = content;
+      existingReport.attachments = attachments || existingReport.attachments;
+      existingReport.status = 'submitted'; // Reset status to submitted if it was read
+      report = await existingReport.save();
+    } else {
+      // Create new report
+      report = await DailyReport.create({
+        employee: req.user._id,
+        manager: employee.manager,
+        content,
+        attachments: attachments || [],
+      });
     }
-
-    const report = await DailyReport.create({
-      employee: req.user._id,
-      manager: employee.manager,
-      content,
-      attachments: attachments || [],
-    });
 
     // Notify manager
     await createNotification({

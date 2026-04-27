@@ -6,10 +6,42 @@ import { Send, FileText, CheckCircle, Paperclip, X, Loader2 } from 'lucide-react
 const DailyReportForm = ({ onReportSubmitted }) => {
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
-  const [submittedToday, setSubmittedToday] = useState(false);
+  const [isUpdate, setIsUpdate] = useState(false);
   const [attachments, setAttachments] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    const fetchTodayReport = async () => {
+      try {
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const { data } = await api.get('/reports', {
+          params: {
+            startDate: startOfDay.toISOString(),
+            endDate: endOfDay.toISOString()
+          }
+        });
+
+        if (data && data.length > 0) {
+          const report = data[0];
+          setContent(report.content);
+          setAttachments(report.attachments || []);
+          setIsUpdate(true);
+        }
+      } catch (error) {
+        console.error('Error fetching today\'s report:', error);
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+
+    fetchTodayReport();
+  }, []);
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -49,10 +81,8 @@ const DailyReportForm = ({ onReportSubmitted }) => {
     setLoading(true);
     try {
       await api.post('/reports', { content, attachments });
-      toast.success('Daily report submitted successfully');
-      setContent('');
-      setAttachments([]);
-      setSubmittedToday(true);
+      toast.success(isUpdate ? 'Daily report updated successfully' : 'Daily report submitted successfully');
+      setIsUpdate(true);
       if (onReportSubmitted) onReportSubmitted();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to submit report');
@@ -61,26 +91,31 @@ const DailyReportForm = ({ onReportSubmitted }) => {
     }
   };
 
-  if (submittedToday) {
+  if (initialLoading) {
     return (
-      <div className="glass-panel p-6 rounded-2xl border border-green-500/30 bg-green-500/5 text-center animate-fade-in">
-        <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
-          <CheckCircle size={24} />
-        </div>
-        <h3 className="text-lg font-bold text-text-primary">Report Submitted!</h3>
-        <p className="text-sm text-text-secondary mt-1">Great job! Your daily report has been sent to your manager.</p>
+      <div className="glass-panel p-12 flex justify-center items-center rounded-2xl border border-border-color bg-secondary/30">
+        <Loader2 className="animate-spin text-primary-500" size={24} />
       </div>
     );
   }
 
   return (
-    <div className="glass-panel p-6 rounded-2xl border border-border-color bg-secondary/30 animate-fade-in">
+    <div className="glass-panel p-6 rounded-2xl border border-border-color bg-secondary/30 animate-fade-in relative overflow-hidden">
+      {isUpdate && (
+        <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2 py-1 bg-green-500/10 text-green-600 rounded-lg text-[10px] font-bold border border-green-500/20">
+          <CheckCircle size={12} />
+          Report Submitted
+        </div>
+      )}
+      
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 text-primary-600 rounded-xl flex items-center justify-center">
           <FileText size={20} />
         </div>
         <div>
-          <h3 className="text-lg font-bold text-text-primary">Daily Report</h3>
+          <h3 className="text-lg font-bold text-text-primary">
+            {isUpdate ? 'Update Daily Report' : 'Daily Report'}
+          </h3>
           <p className="text-xs text-text-secondary">Summary of today's work and progress</p>
         </div>
       </div>
@@ -145,7 +180,7 @@ const DailyReportForm = ({ onReportSubmitted }) => {
             {loading ? (
               <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
             ) : (
-              <><Send size={18} /> Submit Daily Report</>
+              <><Send size={18} /> {isUpdate ? 'Update Daily Report' : 'Submit Daily Report'}</>
             )}
           </button>
         </div>
