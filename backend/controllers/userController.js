@@ -161,7 +161,7 @@ exports.getEmployees = async (req, res) => {
 // Get managers list for user creation dropdown
 exports.getManagers = async (req, res) => {
   try {
-    const managers = await User.find({ role: { $in: ['admin', 'manager'] } }).select('name email role').sort({ name: 1 });
+    const managers = await User.find({ role: 'manager' }).select('name email role').sort({ name: 1 });
     res.json(managers);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
