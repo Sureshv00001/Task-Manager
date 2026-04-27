@@ -78,7 +78,7 @@ const Sidebar = ({ isOpen, setOpen }) => {
               <h4 className="text-sm font-bold text-text-primary mb-1">Expert Support</h4>
               <p className="text-[11px] text-text-secondary mb-3 leading-relaxed">Have questions or need technical assistance? Our team is here to help.</p>
               <button 
-                onClick={() => window.location.href = 'mailto:support@taskmanager.com?subject=Task Manager Support Request'}
+                onClick={() => window.location.href = 'mailto:vsuresh91343@gmail.com?subject=Task Manager Support Request'}
                 className="text-xs font-bold bg-primary-600 text-white px-4 py-2 rounded-xl shadow-lg shadow-primary-500/20 hover:bg-primary-700 transition-all w-full transform hover:-translate-y-0.5"
               >
                 Contact Support
