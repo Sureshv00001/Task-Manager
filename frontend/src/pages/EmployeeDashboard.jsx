@@ -41,12 +41,6 @@ const EmployeeDashboard = () => {
         </div>
       )}
 
-      {tab === 'projects' && (
-        <div className="mt-8">
-          <ProjectList onSelectProject={(id) => console.log('Selected Project:', id)} onShowForm={() => {}} />
-        </div>
-      )}
-
       {tab === 'calendar' && (
         <div className="mt-8">
           <CalendarView />
