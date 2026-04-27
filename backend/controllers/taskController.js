@@ -374,9 +374,25 @@ exports.downloadTaskFile = async (req, res) => {
       });
     }
 
-    const filePath = path.resolve(attachment.url);
+    let filePath = path.resolve(attachment.url);
+    
+    // Fallback for older relative paths or cross-platform issues
     if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ message: 'File not found on server. Please re-upload.' });
+      // Try relative to backend directory
+      const backendPath = path.join(__dirname, '..', '..', attachment.url);
+      if (fs.existsSync(backendPath)) {
+        filePath = backendPath;
+      } else {
+        // Try just the filename in the current absolute uploadDir
+        const fileName = path.basename(attachment.url);
+        const absoluteUploadDir = path.join(__dirname, '..', '..', 'uploads');
+        const fallbackPath = path.join(absoluteUploadDir, fileName);
+        if (fs.existsSync(fallbackPath)) {
+          filePath = fallbackPath;
+        } else {
+          return res.status(404).json({ message: 'File not found on server. Please re-upload.' });
+        }
+      }
     }
 
     // res.download handles headers and streaming automatically
