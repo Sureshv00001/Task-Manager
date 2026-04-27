@@ -230,8 +230,15 @@ const TaskCard = ({ task, onUpdate }) => {
         {task.tags && task.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
             {task.tags.map(tag => (
-              <span key={tag} className="px-2 py-0.5 bg-secondary border border-border-color text-text-secondary rounded text-[10px] font-medium">
-                #{tag}
+              <span 
+                key={tag} 
+                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${
+                  tag.startsWith('@') 
+                    ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800' 
+                    : 'bg-secondary border border-border-color text-text-secondary font-medium'
+                }`}
+              >
+                {tag}
               </span>
             ))}
           </div>

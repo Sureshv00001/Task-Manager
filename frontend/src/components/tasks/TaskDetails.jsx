@@ -214,6 +214,26 @@ const TaskDetails = ({ taskId, onClose }) => {
               <label className="text-[10px] font-bold text-text-secondary uppercase">Assigned By</label>
               <div className="mt-1 text-sm text-text-primary font-medium">{task.assignedBy?.name}</div>
             </div>
+            
+            {task.tags && task.tags.length > 0 && (
+              <div>
+                <label className="text-[10px] font-bold text-text-secondary uppercase">Tags & Mentions</label>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {task.tags.map(tag => (
+                    <span 
+                      key={tag} 
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                        tag.startsWith('@') 
+                          ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800' 
+                          : 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-primary-200 dark:border-primary-800'
+                      }`}
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {task.selfRating && (
               <div>
