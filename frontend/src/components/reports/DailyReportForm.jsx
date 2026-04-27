@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import { Send, FileText, CheckCircle, Paperclip, X, Loader2 } from 'lucide-react';
