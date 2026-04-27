@@ -19,6 +19,8 @@ const TaskForm = ({ onTaskCreated, onCancel }) => {
   const [tagInput, setTagInput] = useState('');
   const [checklistInput, setChecklistInput] = useState('');
   const [employees, setEmployees] = useState([]);
+  const [managers, setManagers] = useState([]);
+  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [projects, setProjects] = useState([]);
@@ -26,12 +28,14 @@ const TaskForm = ({ onTaskCreated, onCancel }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [empRes, projRes] = await Promise.all([
+        const [empRes, projRes, managerRes] = await Promise.all([
           api.get('/users/employees'),
-          api.get('/projects')
+          api.get('/projects'),
+          api.get('/users/managers')
         ]);
         setEmployees(empRes.data);
         setProjects(projRes.data);
+        setManagers(managerRes.data);
       } catch (error) {
         toast.error('Failed to load initial data');
       }
@@ -39,13 +43,30 @@ const TaskForm = ({ onTaskCreated, onCancel }) => {
     fetchData();
   }, []);
 
-  const handleAddTag = (e) => {
-    e.preventDefault();
-    if (tagInput && !formData.tags.includes(tagInput)) {
-      setFormData({ ...formData, tags: [...formData.tags, tagInput] });
+  const handleAddTag = (e, customTag) => {
+    if (e) e.preventDefault();
+    const tag = (customTag || tagInput).trim();
+    if (tag && !formData.tags.includes(tag)) {
+      setFormData({ ...formData, tags: [...formData.tags, tag] });
       setTagInput('');
+      setShowTagSuggestions(false);
     }
   };
+
+  const onTagInputChange = (e) => {
+    const value = e.target.value;
+    setTagInput(value);
+    if (value.startsWith('@')) {
+      setShowTagSuggestions(true);
+    } else {
+      setShowTagSuggestions(false);
+    }
+  };
+
+  const filteredManagers = managers.filter(m => 
+    `@${m.name.toLowerCase().replace(/\s+/g, '')}`.includes(tagInput.toLowerCase()) ||
+    m.name.toLowerCase().includes(tagInput.toLowerCase().replace('@', ''))
+  );
 
   const removeTag = (tagToRemove) => {
     setFormData({ ...formData, tags: formData.tags.filter(tag => tag !== tagToRemove) });
@@ -218,18 +239,43 @@ const TaskForm = ({ onTaskCreated, onCancel }) => {
               </span>
             ))}
           </div>
-          <div className="flex space-x-2">
-            <input 
-              type="text" 
-              value={tagInput} 
-              onChange={(e) => setTagInput(e.target.value)} 
-              onKeyPress={(e) => e.key === 'Enter' && handleAddTag(e)}
-              className="flex-1 px-4 py-2 bg-background border border-border-color rounded-xl focus:ring-primary-500 focus:border-primary-500 text-text-primary" 
-              placeholder="Add a tag..." 
-            />
-            <button type="button" onClick={handleAddTag} className="p-2 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors">
-              <Plus size={20} />
-            </button>
+          <div className="relative">
+            <div className="flex space-x-2">
+              <input 
+                type="text" 
+                value={tagInput} 
+                onChange={onTagInputChange} 
+                onKeyPress={(e) => e.key === 'Enter' && handleAddTag(e)}
+                className="flex-1 px-4 py-2 bg-background border border-border-color rounded-xl focus:ring-primary-500 focus:border-primary-500 text-text-primary" 
+                placeholder="Add a tag (e.g., #urgent or @ManagerName)..." 
+              />
+              <button type="button" onClick={handleAddTag} className="p-2 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors">
+                <Plus size={20} />
+              </button>
+            </div>
+
+            {/* Tag Suggestions */}
+            {showTagSuggestions && filteredManagers.length > 0 && (
+              <div className="absolute z-50 bottom-full mb-2 w-full bg-secondary border border-border-color rounded-xl shadow-xl overflow-hidden max-h-48 overflow-y-auto">
+                <div className="px-3 py-2 bg-primary/5 border-b border-border-color text-[10px] font-bold text-text-secondary uppercase tracking-wider">
+                  Tag a Manager
+                </div>
+                {filteredManagers.map(manager => (
+                  <button
+                    key={manager._id}
+                    type="button"
+                    onClick={() => handleAddTag(null, `@${manager.name}`)}
+                    className="w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-primary-500 hover:text-white transition-colors flex items-center gap-2"
+                  >
+                    <div className="w-6 h-6 bg-primary-100 dark:bg-primary-900/30 text-primary-600 rounded-full flex items-center justify-center text-[10px] font-bold">
+                      {manager.name.charAt(0)}
+                    </div>
+                    <span>{manager.name}</span>
+                    <span className="text-[10px] opacity-60 ml-auto">@manager</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
