@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { format } from 'date-fns';
-import { FileText, User as UserIcon, Calendar, Check, ExternalLink, Paperclip, Download } from 'lucide-react';
+import { FileText, User as UserIcon, Calendar, Check, ExternalLink, Paperclip, Download, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000' : '');
 
 const ReportList = () => {
+  const { user } = useAuth();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -31,6 +33,17 @@ const ReportList = () => {
       setReports(reports.map(r => r._id === id ? { ...r, status: 'read' } : r));
     } catch (error) {
       toast.error('Failed to mark as read');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this report?')) return;
+    try {
+      await api.delete(`/reports/${id}`);
+      setReports(reports.filter(r => r._id !== id));
+      toast.success('Report deleted successfully');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete report');
     }
   };
 
@@ -64,18 +77,29 @@ const ReportList = () => {
                     </p>
                   </div>
                 </div>
-                {report.status === 'submitted' ? (
-                  <button 
-                    onClick={() => handleMarkAsRead(report._id)}
-                    className="text-[10px] font-bold bg-primary-600 text-white px-2 py-1 rounded-lg flex items-center gap-1 hover:bg-primary-700 transition-colors"
-                  >
-                    <Check size={12} /> Mark Read
-                  </button>
-                ) : (
-                  <span className="text-[10px] font-bold text-green-600 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-lg flex items-center gap-1">
-                    <Check size={12} /> Read
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {(user._id === report.employee._id || user.role === 'admin') && (
+                    <button 
+                      onClick={() => handleDelete(report._id)}
+                      className="p-1.5 text-text-secondary hover:text-red-500 transition-colors"
+                      title="Delete Report"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                  {report.status === 'submitted' ? (
+                    <button 
+                      onClick={() => handleMarkAsRead(report._id)}
+                      className="text-[10px] font-bold bg-primary-600 text-white px-2 py-1 rounded-lg flex items-center gap-1 hover:bg-primary-700 transition-colors"
+                    >
+                      <Check size={12} /> Mark Read
+                    </button>
+                  ) : (
+                    <span className="text-[10px] font-bold text-green-600 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-lg flex items-center gap-1">
+                      <Check size={12} /> Read
+                    </span>
+                  )}
+                </div>
               </div>
               
               <div className="bg-background/50 p-3 rounded-xl border border-border-color/50 mb-3">

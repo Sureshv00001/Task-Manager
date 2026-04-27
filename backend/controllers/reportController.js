@@ -127,3 +127,22 @@ exports.uploadReportFile = async (req, res) => {
     res.status(500).json({ message: 'Server error during upload' });
   }
 };
+
+// Delete report
+exports.deleteReport = async (req, res) => {
+  try {
+    const report = await DailyReport.findById(req.params.id);
+    if (!report) return res.status(404).json({ message: 'Report not found' });
+    
+    // Auth check: Only the employee who created it or an Admin can delete it
+    if (report.employee.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized to delete this report' });
+    }
+
+    await DailyReport.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Report deleted successfully' });
+  } catch (error) {
+    console.error('Delete report error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
