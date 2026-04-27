@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
-import { Search, Plus, Trash2, Edit2 } from 'lucide-react';
+import { Search, Plus, Trash2, Edit2, CheckSquare, Users } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const UserList = () => {
@@ -61,15 +61,22 @@ const UserList = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const payload = { ...formData };
+      
+      // Auto-assign current manager if the user is a manager
+      if (currentUser.role === 'manager' && !editingId) {
+        payload.manager = currentUser._id;
+        payload.role = 'employee'; // Force employee role
+      }
+
       if (editingId) {
         // Prevent password update if empty
-        const data = { ...formData };
-        if (!data.password) delete data.password;
+        if (!payload.password) delete payload.password;
         
-        await api.put(`/users/${editingId}`, data);
+        await api.put(`/users/${editingId}`, payload);
         toast.success('User updated successfully');
       } else {
-        await api.post('/users', formData);
+        await api.post('/users', payload);
         toast.success('User created successfully');
       }
       setShowForm(false);
@@ -137,24 +144,39 @@ const UserList = () => {
               <label className="block text-sm font-medium text-text-secondary mb-1">Password {editingId && '(leave blank to keep current)'}</label>
               <input required={!editingId} minLength={6} type="password" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} className="w-full px-4 py-2 border border-border-color rounded-xl focus:ring-primary-500 focus:border-primary-500 bg-background text-text-primary" />
             </div>
-            {currentUser.role === 'admin' && (
+            {currentUser.role === 'admin' ? (
               <div>
                 <label className="block text-sm font-medium text-text-secondary mb-1">Role</label>
-                <select value={formData.role} onChange={(e) => setFormData({...formData, role: e.target.value})} className="w-full px-4 py-2 border border-border-color rounded-xl focus:ring-primary-500 focus:border-primary-500 bg-secondary text-text-primary">
+                <select value={formData.role} onChange={(e) => setFormData({...formData, role: e.target.value})} className="w-full px-4 py-2 border border-border-color rounded-xl focus:ring-primary-500 focus:border-primary-500 bg-secondary text-text-primary text-sm">
                   <option value="employee">Employee</option>
                   <option value="manager">Manager</option>
                 </select>
               </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-1">Role</label>
+                <div className="w-full px-4 py-2 border border-border-color rounded-xl bg-primary-500/5 text-primary-600 text-sm font-bold flex items-center gap-2">
+                  <CheckSquare size={14} /> Employee (Fixed)
+                </div>
+                <p className="text-[10px] text-text-secondary mt-1">As a Manager, you can only create Employee accounts.</p>
+              </div>
             )}
+
             {formData.role === 'employee' && (
               <div>
                 <label className="block text-sm font-medium text-text-secondary mb-1">Assigned Manager</label>
-                <select value={formData.manager} onChange={(e) => setFormData({...formData, manager: e.target.value})} className="w-full px-4 py-2 border border-border-color rounded-xl focus:ring-primary-500 focus:border-primary-500 bg-secondary text-text-primary">
-                  <option value="">Select Manager</option>
-                  {managers.map(m => (
-                    <option key={m._id} value={m._id}>{m.name} ({m.role})</option>
-                  ))}
-                </select>
+                {currentUser.role === 'admin' ? (
+                  <select value={formData.manager} onChange={(e) => setFormData({...formData, manager: e.target.value})} className="w-full px-4 py-2 border border-border-color rounded-xl focus:ring-primary-500 focus:border-primary-500 bg-secondary text-text-primary text-sm">
+                    <option value="">Select Manager</option>
+                    {managers.map(m => (
+                      <option key={m._id} value={m._id}>{m.name} ({m.role})</option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="w-full px-4 py-2 border border-border-color rounded-xl bg-primary-500/5 text-primary-600 text-sm font-bold flex items-center gap-2">
+                    <Users size={14} /> {currentUser.name} (You)
+                  </div>
+                )}
               </div>
             )}
             <div className="md:col-span-2 flex justify-end mt-2">
