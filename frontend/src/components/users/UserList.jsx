@@ -138,11 +138,26 @@ const UserList = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-1">Email Address</label>
-              <input required type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full px-4 py-2 border border-border-color rounded-xl focus:ring-primary-500 focus:border-primary-500 bg-background text-text-primary" />
+              <input 
+                required 
+                type="email" 
+                autoComplete="new-user-email"
+                value={formData.email} 
+                onChange={(e) => setFormData({...formData, email: e.target.value})} 
+                className="w-full px-4 py-2 border border-border-color rounded-xl focus:ring-primary-500 focus:border-primary-500 bg-background text-text-primary" 
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-1">Password {editingId && '(leave blank to keep current)'}</label>
-              <input required={!editingId} minLength={6} type="password" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} className="w-full px-4 py-2 border border-border-color rounded-xl focus:ring-primary-500 focus:border-primary-500 bg-background text-text-primary" />
+              <input 
+                required={!editingId} 
+                minLength={6} 
+                type="password" 
+                autoComplete="new-password"
+                value={formData.password} 
+                onChange={(e) => setFormData({...formData, password: e.target.value})} 
+                className="w-full px-4 py-2 border border-border-color rounded-xl focus:ring-primary-500 focus:border-primary-500 bg-background text-text-primary" 
+              />
             </div>
             {currentUser.role === 'admin' ? (
               <div>
