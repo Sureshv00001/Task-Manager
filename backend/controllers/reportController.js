@@ -7,10 +7,18 @@ exports.submitReport = async (req, res) => {
   try {
     const { content, attachments } = req.body;
     
-    // Get the employee's tagged manager
-    const employee = await User.findById(req.user._id);
-    if (!employee.manager) {
-      return res.status(400).json({ message: 'No tagged manager found. Please contact admin.' });
+    // Get the user submitting the report
+    const sender = await User.findById(req.user._id);
+    let recipientId = sender.manager;
+
+    // If a manager is submitting, they report to an admin
+    if (req.user.role === 'manager') {
+      const admin = await User.findOne({ role: 'admin' });
+      if (admin) recipientId = admin._id;
+    }
+
+    if (!recipientId && req.user.role !== 'admin') {
+      return res.status(400).json({ message: 'No recipient (Manager/Admin) found for your report. Please contact admin.' });
     }
 
     // Check if report for today already exists
@@ -29,24 +37,24 @@ exports.submitReport = async (req, res) => {
       // Update existing report
       existingReport.content = content;
       existingReport.attachments = attachments || existingReport.attachments;
-      existingReport.status = 'submitted'; // Reset status to submitted if it was read
+      existingReport.status = 'submitted'; 
       report = await existingReport.save();
     } else {
       // Create new report
       report = await DailyReport.create({
         employee: req.user._id,
-        manager: employee.manager,
+        manager: recipientId,
         content,
         attachments: attachments || [],
       });
     }
 
-    // Notify manager
+    // Notify recipient
     await createNotification({
-      recipient: employee.manager,
+      recipient: recipientId,
       sender: req.user._id,
       type: 'report_submitted',
-      message: `${req.user.name} has submitted their daily report.`,
+      message: `${req.user.name} (${req.user.role}) has submitted their daily report.`,
     });
 
     res.status(201).json(report);

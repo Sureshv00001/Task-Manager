@@ -6,8 +6,8 @@ const upload = require('../middleware/upload');
 
 router.use(protect);
 
-router.post('/', authorize('employee'), submitReport);
-router.post('/upload', authorize('employee'), upload.single('file'), uploadReportFile);
+router.post('/', authorize('employee', 'manager'), submitReport);
+router.post('/upload', authorize('employee', 'manager'), upload.single('file'), uploadReportFile);
 router.get('/', getReports);
 router.put('/:id/read', authorize('manager', 'admin'), markAsRead);
 router.delete('/:id', deleteReport);

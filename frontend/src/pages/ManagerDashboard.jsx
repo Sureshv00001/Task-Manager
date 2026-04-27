@@ -12,6 +12,7 @@ import ProjectForm from '../components/projects/ProjectForm';
 import RiskAlerts from '../components/dashboard/RiskAlerts';
 import { Plus, FileText } from 'lucide-react';
 import ReportList from '../components/reports/ReportList';
+import DailyReportForm from '../components/reports/DailyReportForm';
 
 const ManagerDashboard = () => {
   const [searchParams] = useSearchParams();
@@ -75,7 +76,20 @@ const ManagerDashboard = () => {
       {tab === 'users' && <UserList />}
       {tab === 'performance' && <PerformanceSummary />}
       {tab === 'calendar' && <CalendarView />}
-      {tab === 'reports' && <ReportList />}
+      {tab === 'reports' && (
+        <div className="space-y-8">
+          <div className="max-w-2xl mx-auto">
+            <DailyReportForm />
+          </div>
+          <div className="border-t border-border-color pt-8">
+            <h3 className="text-xl font-bold text-text-primary mb-6 flex items-center gap-2">
+              <span className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 flex items-center justify-center mr-1">👥</span>
+              Team Reports
+            </h3>
+            <ReportList />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
