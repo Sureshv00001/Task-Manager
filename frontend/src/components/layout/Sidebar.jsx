@@ -9,12 +9,12 @@ const Sidebar = ({ isOpen, setOpen }) => {
   const getLinks = () => {
     const baseLinks = [
       { name: 'Dashboard', path: `/${user?.role}`, icon: <LayoutDashboard size={20} /> },
-      { name: 'Projects', path: `/${user?.role}?tab=projects`, icon: <Briefcase size={20} /> },
     ];
 
     if (user?.role === 'admin' || user?.role === 'manager') {
       return [
         ...baseLinks,
+        { name: 'Projects', path: `/${user?.role}?tab=projects`, icon: <Briefcase size={20} /> },
         { name: 'Tasks', path: `/${user?.role}?tab=tasks`, icon: <CheckSquare size={20} /> },
         { name: 'Calendar', path: `/${user?.role}?tab=calendar`, icon: <CalendarIcon size={20} /> },
         { name: 'Users', path: `/${user?.role}?tab=users`, icon: <Users size={20} /> },
