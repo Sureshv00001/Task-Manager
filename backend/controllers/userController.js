@@ -9,6 +9,9 @@ exports.createUser = async (req, res) => {
     if (req.user.role === 'manager' && role !== 'employee') {
       return res.status(403).json({ message: 'Managers can only create Employee accounts' });
     }
+    if (role === 'admin') {
+      return res.status(403).json({ message: 'Cannot create Admin accounts via this form' });
+    }
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User with this email already exists' });
@@ -110,7 +113,14 @@ exports.updateUser = async (req, res) => {
     if (name) user.name = name;
     if (email) user.email = email;
     if (password) user.password = password;
-    if (role && req.user.role === 'admin') user.role = role;
+    
+    // Only allow role updates if not setting to admin
+    if (role && req.user.role === 'admin' && role !== 'admin') {
+      user.role = role;
+    } else if (role && role === 'admin' && user.role !== 'admin') {
+      return res.status(403).json({ message: 'Cannot promote user to Admin' });
+    }
+
     if (manager !== undefined) user.manager = role === 'employee' ? manager : null;
     await user.save();
     res.json({ _id: user._id, name: user.name, email: user.email, role: user.role, createdAt: user.createdAt });

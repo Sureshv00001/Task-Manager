@@ -143,7 +143,6 @@ const UserList = () => {
                 <select value={formData.role} onChange={(e) => setFormData({...formData, role: e.target.value})} className="w-full px-4 py-2 border border-border-color rounded-xl focus:ring-primary-500 focus:border-primary-500 bg-secondary text-text-primary">
                   <option value="employee">Employee</option>
                   <option value="manager">Manager</option>
-                  <option value="admin">Admin</option>
                 </select>
               </div>
             )}
