@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
 const {
-  createUser, getUsers, getUserById, updateUser, deleteUser, getEmployees, getPerformance,
+  createUser, getUsers, getUserById, updateUser, deleteUser, getEmployees, getManagers, getPerformance,
   updateProfile, updatePassword
 } = require('../controllers/userController');
 
