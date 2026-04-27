@@ -71,19 +71,21 @@ const Sidebar = ({ isOpen, setOpen }) => {
           </div>
         </div>
         
-        <div className="p-4 border-t border-border-color">
-          <div className="bg-gradient-to-br from-primary-500/10 to-blue-500/10 p-5 rounded-2xl border border-primary-500/10 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 -mr-4 -mt-4 w-16 h-16 bg-primary-500/10 rounded-full blur-xl group-hover:bg-primary-500/20 transition-colors"></div>
-            <h4 className="text-sm font-bold text-text-primary mb-1">Expert Support</h4>
-            <p className="text-[11px] text-text-secondary mb-3 leading-relaxed">Have questions or need technical assistance? Our team is here to help.</p>
-            <button 
-              onClick={() => window.location.href = 'mailto:support@taskmanager.com?subject=Task Manager Support Request'}
-              className="text-xs font-bold bg-primary-600 text-white px-4 py-2 rounded-xl shadow-lg shadow-primary-500/20 hover:bg-primary-700 transition-all w-full transform hover:-translate-y-0.5"
-            >
-              Contact Support
-            </button>
+        {user?.role !== 'admin' && (
+          <div className="p-4 border-t border-border-color">
+            <div className="bg-gradient-to-br from-primary-500/10 to-blue-500/10 p-5 rounded-2xl border border-primary-500/10 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 -mr-4 -mt-4 w-16 h-16 bg-primary-500/10 rounded-full blur-xl group-hover:bg-primary-500/20 transition-colors"></div>
+              <h4 className="text-sm font-bold text-text-primary mb-1">Expert Support</h4>
+              <p className="text-[11px] text-text-secondary mb-3 leading-relaxed">Have questions or need technical assistance? Our team is here to help.</p>
+              <button 
+                onClick={() => window.location.href = 'mailto:support@taskmanager.com?subject=Task Manager Support Request'}
+                className="text-xs font-bold bg-primary-600 text-white px-4 py-2 rounded-xl shadow-lg shadow-primary-500/20 hover:bg-primary-700 transition-all w-full transform hover:-translate-y-0.5"
+              >
+                Contact Support
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );
