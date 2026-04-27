@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { LayoutDashboard, Users, CheckSquare, Settings, BarChart2, Calendar as CalendarIcon, Briefcase, ClipboardCheck } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const Sidebar = ({ isOpen, setOpen }) => {
   const { user } = useAuth();
