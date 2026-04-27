@@ -10,7 +10,8 @@ import Leaderboard from '../components/dashboard/Leaderboard';
 import ProjectList from '../components/projects/ProjectList';
 import ProjectForm from '../components/projects/ProjectForm';
 import RiskAlerts from '../components/dashboard/RiskAlerts';
-import { Plus } from 'lucide-react';
+import { Plus, FileText } from 'lucide-react';
+import ReportList from '../components/reports/ReportList';
 
 const ManagerDashboard = () => {
   const [searchParams] = useSearchParams();
@@ -74,6 +75,7 @@ const ManagerDashboard = () => {
       {tab === 'users' && <UserList />}
       {tab === 'performance' && <PerformanceSummary />}
       {tab === 'calendar' && <CalendarView />}
+      {tab === 'reports' && <ReportList />}
     </div>
   );
 };

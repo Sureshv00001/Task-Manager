@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import ProjectList from '../components/projects/ProjectList';
 import { useSearchParams } from 'react-router-dom';
 import Leaderboard from '../components/dashboard/Leaderboard';
+import DailyReportForm from '../components/reports/DailyReportForm';
 
 const EmployeeDashboard = () => {
   const { user } = useAuth();
@@ -49,6 +50,12 @@ const EmployeeDashboard = () => {
       {tab === 'calendar' && (
         <div className="mt-8">
           <CalendarView />
+        </div>
+      )}
+
+      {tab === 'reports' && (
+        <div className="mt-8 max-w-2xl mx-auto">
+          <DailyReportForm />
         </div>
       )}
     </div>

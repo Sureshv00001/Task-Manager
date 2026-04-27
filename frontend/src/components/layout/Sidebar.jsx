@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LayoutDashboard, Users, CheckSquare, Settings, BarChart2, Calendar as CalendarIcon, Briefcase } from 'lucide-react';
+import { LayoutDashboard, Users, CheckSquare, Settings, BarChart2, Calendar as CalendarIcon, Briefcase, ClipboardCheck } from 'lucide-react';
 
 const Sidebar = ({ isOpen, setOpen }) => {
   const { user } = useAuth();
@@ -18,13 +18,15 @@ const Sidebar = ({ isOpen, setOpen }) => {
         { name: 'Tasks', path: `/${user?.role}?tab=tasks`, icon: <CheckSquare size={20} /> },
         { name: 'Calendar', path: `/${user?.role}?tab=calendar`, icon: <CalendarIcon size={20} /> },
         { name: 'Users', path: `/${user?.role}?tab=users`, icon: <Users size={20} /> },
-        { name: 'Performance', path: `/${user?.role}?tab=performance`, icon: <BarChart2 size={20} /> }
+        { name: 'Performance', path: `/${user?.role}?tab=performance`, icon: <BarChart2 size={20} /> },
+        { name: 'Daily Reports', path: `/${user?.role}?tab=reports`, icon: <ClipboardCheck size={20} /> }
       ];
     } else {
       return [
         ...baseLinks,
         { name: 'My Tasks', path: `/employee`, icon: <CheckSquare size={20} /> },
-        { name: 'Calendar', path: `/employee?tab=calendar`, icon: <CalendarIcon size={20} /> }
+        { name: 'Calendar', path: `/employee?tab=calendar`, icon: <CalendarIcon size={20} /> },
+        { name: 'Daily Report', path: `/employee?tab=reports`, icon: <ClipboardCheck size={20} /> }
       ];
     }
   };

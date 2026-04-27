@@ -5,7 +5,7 @@ const { getOnlineUsers } = require('../utils/socket');
 // Create user
 exports.createUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, manager } = req.body;
     if (req.user.role === 'manager' && role !== 'employee') {
       return res.status(403).json({ message: 'Managers can only create Employee accounts' });
     }
@@ -17,6 +17,7 @@ exports.createUser = async (req, res) => {
       name, email, password,
       role: role || 'employee',
       createdBy: req.user._id,
+      manager: role === 'employee' ? manager : null,
     });
     res.status(201).json({
       _id: user._id, name: user.name, email: user.email,
@@ -53,6 +54,7 @@ exports.getUsers = async (req, res) => {
     
     const users = await Promise.all((await User.find(query)
       .populate('createdBy', 'name email')
+      .populate('manager', 'name email')
       .sort({ createdAt: -1 })
       .skip((parseInt(page) - 1) * parseInt(limit))
       .limit(parseInt(limit))).map(async (u) => {
@@ -104,11 +106,12 @@ exports.updateUser = async (req, res) => {
     if (req.user.role === 'manager' && req.body.role && req.body.role !== 'employee') {
       return res.status(403).json({ message: 'Managers can only assign Employee role' });
     }
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, manager } = req.body;
     if (name) user.name = name;
     if (email) user.email = email;
     if (password) user.password = password;
     if (role && req.user.role === 'admin') user.role = role;
+    if (manager !== undefined) user.manager = role === 'employee' ? manager : null;
     await user.save();
     res.json({ _id: user._id, name: user.name, email: user.email, role: user.role, createdAt: user.createdAt });
   } catch (error) {
@@ -140,6 +143,16 @@ exports.getEmployees = async (req, res) => {
   try {
     const employees = await User.find({ role: 'employee' }).select('name email').sort({ name: 1 });
     res.json(employees);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get managers list for user creation dropdown
+exports.getManagers = async (req, res) => {
+  try {
+    const managers = await User.find({ role: { $in: ['admin', 'manager'] } }).select('name email role').sort({ name: 1 });
+    res.json(managers);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }

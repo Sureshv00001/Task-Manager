@@ -24,7 +24,15 @@ exports.login = async (req, res) => {
     const token = generateToken(user._id);
     res.json({
       token,
-      user: { _id: user._id, name: user.name, email: user.email, role: user.role },
+      user: { 
+        _id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        role: user.role,
+        avatar: user.avatar,
+        manager: user.manager,
+        department: user.department
+      },
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -34,8 +42,18 @@ exports.login = async (req, res) => {
 
 exports.getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    res.json({ _id: user._id, name: user.name, email: user.email, role: user.role });
+    const user = await User.findById(req.user._id).populate('manager', 'name email');
+    res.json({ 
+      _id: user._id, 
+      name: user.name, 
+      email: user.email, 
+      role: user.role,
+      avatar: user.avatar,
+      manager: user.manager,
+      department: user.department,
+      bio: user.bio,
+      phone: user.phone
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }

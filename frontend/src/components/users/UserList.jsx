@@ -17,8 +17,9 @@ const UserList = () => {
 
   // Form state
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'employee' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'employee', manager: '' });
   const [editingId, setEditingId] = useState(null);
+  const [managers, setManagers] = useState([]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -35,8 +36,20 @@ const UserList = () => {
     }
   };
 
+  const fetchManagers = async () => {
+    try {
+      const res = await api.get('/users/managers');
+      setManagers(res.data);
+    } catch (error) {
+      console.error('Failed to fetch managers');
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
+    if (currentUser.role === 'admin' || currentUser.role === 'manager') {
+      fetchManagers();
+    }
   }, [page, roleFilter]);
 
   const handleSearch = (e) => {
@@ -60,7 +73,7 @@ const UserList = () => {
         toast.success('User created successfully');
       }
       setShowForm(false);
-      setFormData({ name: '', email: '', password: '', role: 'employee' });
+      setFormData({ name: '', email: '', password: '', role: 'employee', manager: '' });
       setEditingId(null);
       fetchUsers();
     } catch (error) {
@@ -81,7 +94,13 @@ const UserList = () => {
   };
 
   const openEdit = (user) => {
-    setFormData({ name: user.name, email: user.email, password: '', role: user.role });
+    setFormData({ 
+      name: user.name, 
+      email: user.email, 
+      password: '', 
+      role: user.role, 
+      manager: user.manager?._id || user.manager || '' 
+    });
     setEditingId(user._id);
     setShowForm(true);
   };
@@ -92,7 +111,7 @@ const UserList = () => {
         <h2 className="text-xl font-bold text-text-primary">Manage Users</h2>
         <button 
           onClick={() => {
-            setFormData({ name: '', email: '', password: '', role: 'employee' });
+            setFormData({ name: '', email: '', password: '', role: 'employee', manager: '' });
             setEditingId(null);
             setShowForm(!showForm);
           }}
@@ -125,6 +144,17 @@ const UserList = () => {
                   <option value="employee">Employee</option>
                   <option value="manager">Manager</option>
                   <option value="admin">Admin</option>
+                </select>
+              </div>
+            )}
+            {formData.role === 'employee' && (
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-1">Assigned Manager</label>
+                <select value={formData.manager} onChange={(e) => setFormData({...formData, manager: e.target.value})} className="w-full px-4 py-2 border border-border-color rounded-xl focus:ring-primary-500 focus:border-primary-500 bg-secondary text-text-primary">
+                  <option value="">Select Manager</option>
+                  {managers.map(m => (
+                    <option key={m._id} value={m._id}>{m.name} ({m.role})</option>
+                  ))}
                 </select>
               </div>
             )}
@@ -208,12 +238,19 @@ const UserList = () => {
                           {u.role}
                         </span>
                         {u.role === 'employee' && (
-                          <span className={`inline-flex w-fit px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter border
-                            ${u.workload === 'busy' 
-                              ? 'bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800' 
-                              : 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'}`}>
-                            {u.workload} ({u.activeTasks} Tasks)
-                          </span>
+                          <div className="flex flex-col gap-1">
+                            <span className={`inline-flex w-fit px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter border
+                              ${u.workload === 'busy' 
+                                ? 'bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800' 
+                                : 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'}`}>
+                              {u.workload} ({u.activeTasks} Tasks)
+                            </span>
+                            {u.manager && (
+                              <span className="text-[9px] text-text-secondary font-medium">
+                                Manager: <span className="text-primary-600">{u.manager.name}</span>
+                              </span>
+                            )}
+                          </div>
                         )}
                       </div>
                     </td>

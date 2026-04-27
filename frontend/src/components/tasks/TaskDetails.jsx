@@ -16,6 +16,8 @@ const TaskDetails = ({ taskId, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('comments');
   const [viewers, setViewers] = useState([]);
+  const [selfRating, setSelfRating] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
   const { socket } = useSocket();
   const { user } = useAuth();
 
@@ -74,6 +76,23 @@ const TaskDetails = ({ taskId, onClose }) => {
       setTask({ ...task, checklists: updatedChecklists });
     } catch (error) {
       toast.error('Failed to update checklist');
+    }
+  };
+
+  const handleSubmitTask = async () => {
+    if (selfRating === 0) {
+      toast.error('Please rate your work before submitting');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await api.put(`/tasks/${taskId}/submit`, { selfRating });
+      setTask(res.data);
+      toast.success('Task submitted successfully');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Submission failed');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -195,6 +214,15 @@ const TaskDetails = ({ taskId, onClose }) => {
               <label className="text-[10px] font-bold text-text-secondary uppercase">Assigned By</label>
               <div className="mt-1 text-sm text-text-primary font-medium">{task.assignedBy?.name}</div>
             </div>
+
+            {task.selfRating && (
+              <div>
+                <label className="text-[10px] font-bold text-text-secondary uppercase">Your Self-Rating</label>
+                <div className="mt-1">
+                  <StarRating rating={task.selfRating} readOnly />
+                </div>
+              </div>
+            )}
             {task.reviewedAt && (
               <div className="pt-4 border-t border-border-color">
                 <label className="text-[10px] font-bold text-text-secondary uppercase">Review Results</label>
@@ -233,6 +261,26 @@ const TaskDetails = ({ taskId, onClose }) => {
                 )}
               </div>
             </div>
+
+            {/* Submission Section for Employees */}
+            {user.role === 'employee' && (task.status === 'pending' || task.status === 'in-progress') && (
+              <div className="pt-6 border-t border-border-color mt-6">
+                <label className="text-[10px] font-bold text-text-secondary uppercase mb-3 block">Submit Task</label>
+                <div className="bg-secondary p-4 rounded-xl border border-primary-500/30 shadow-sm">
+                  <p className="text-xs text-text-secondary mb-3">Rate your work before completing:</p>
+                  <div className="flex justify-center mb-4">
+                    <StarRating rating={selfRating} setRating={setSelfRating} />
+                  </div>
+                  <button 
+                    onClick={handleSubmitTask}
+                    disabled={submitting}
+                    className="w-full bg-primary-600 hover:bg-primary-700 text-white py-2 rounded-lg text-sm font-bold transition-all shadow-md flex items-center justify-center gap-2"
+                  >
+                    {submitting ? 'Submitting...' : <><CheckCircle2 size={16} /> Complete Task</>}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

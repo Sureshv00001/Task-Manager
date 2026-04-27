@@ -204,8 +204,10 @@ exports.submitTask = async (req, res) => {
     if (task.status !== 'in-progress' && task.status !== 'pending') {
       return res.status(400).json({ message: 'Task must be in-progress to submit' });
     }
+    const { selfRating } = req.body;
     task.status = 'completed';
     task.submittedAt = new Date();
+    if (selfRating) task.selfRating = selfRating;
     await task.save();
 
     // Activity log
@@ -219,7 +221,7 @@ exports.submitTask = async (req, res) => {
     // Notify assigner
     sendTaskSubmittedEmail(task.assignedBy.email, task.assignedBy.name, task, task.assignedTo.name);
     
-    // Create real-time notification
+    // Create real-time notification for assigner
     await createNotification({
       recipient: task.assignedBy._id,
       sender: req.user._id,
@@ -227,6 +229,18 @@ exports.submitTask = async (req, res) => {
       task: task._id,
       message: `${req.user.name} has submitted the task: ${task.title}`
     });
+
+    // Also notify tagged manager if different from assigner
+    const employee = await User.findById(req.user._id);
+    if (employee.manager && employee.manager.toString() !== task.assignedBy._id.toString()) {
+      await createNotification({
+        recipient: employee.manager,
+        sender: req.user._id,
+        type: 'task_submitted',
+        task: task._id,
+        message: `${req.user.name} (Employee) has submitted a task: ${task.title}`
+      });
+    }
 
     res.json(task);
   } catch (error) {

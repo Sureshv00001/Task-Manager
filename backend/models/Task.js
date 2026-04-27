@@ -54,6 +54,7 @@ const taskSchema = new mongoose.Schema(
       },
     ],
     rating: { type: Number, min: 1, max: 5, default: null },
+    selfRating: { type: Number, min: 1, max: 5, default: null },
     marks: { type: Number, min: 0, max: 100, default: null },
     feedback: { type: String, default: null, maxlength: 2000 },
     submittedAt: { type: Date, default: null },

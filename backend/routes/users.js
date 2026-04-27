@@ -8,6 +8,7 @@ const {
 
 router.use(protect);
 router.get('/employees', authorize('admin', 'manager'), getEmployees);
+router.get('/managers', authorize('admin', 'manager'), getManagers);
 router.get('/performance', authorize('admin', 'manager'), getPerformance);
 router.put('/profile', updateProfile);
 router.put('/update-password', updatePassword);
