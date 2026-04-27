@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { FileText, User as UserIcon, Calendar, Check, ExternalLink, Paperclip, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000' : '');
 
 const ReportList = () => {
   const [reports, setReports] = useState([]);
