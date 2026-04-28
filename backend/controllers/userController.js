@@ -217,14 +217,17 @@ exports.updateProfile = async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     const { name, avatar, bio, phone, department } = req.body;
-    if (name) user.name = name;
-    if (avatar) user.avatar = avatar;
-    if (bio) user.bio = bio;
-    if (phone) user.phone = phone;
-    if (department) user.department = department;
+    
+    // Update fields if they are provided in the request body
+    if (name !== undefined) user.name = name;
+    if (avatar !== undefined) user.avatar = avatar;
+    if (bio !== undefined) user.bio = bio;
+    if (phone !== undefined) user.phone = phone;
+    if (department !== undefined) user.department = department;
 
     await user.save();
-    res.json({
+    
+    const updatedUser = {
       _id: user._id,
       name: user.name,
       email: user.email,
@@ -233,9 +236,12 @@ exports.updateProfile = async (req, res) => {
       bio: user.bio,
       phone: user.phone,
       department: user.department,
-    });
+    };
+
+    res.json(updatedUser);
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Update profile error:', error);
+    res.status(500).json({ message: error.message || 'Server error' });
   }
 };
 
