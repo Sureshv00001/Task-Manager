@@ -287,6 +287,9 @@ exports.uploadAvatar = async (req, res) => {
     });
   } catch (error) {
     console.error('Avatar upload error:', error);
-    res.status(500).json({ message: 'Avatar upload failed' });
+    res.status(500).json({ 
+      message: error.message || 'Avatar upload failed',
+      details: error
+    });
   }
 };
