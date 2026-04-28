@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
-import { User, Mail, Shield, Camera, Lock, Save, Phone, Briefcase, Info } from 'lucide-react';
+import { User, Mail, Shield, Camera, Lock, Save, Phone, Briefcase, Info, Loader2 } from 'lucide-react';
 
 const Profile = () => {
   const { user, setUser } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+  const fileInputRef = useRef(null);
+
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -28,13 +31,41 @@ const Profile = () => {
     try {
       const { data } = await api.put('/users/profile', formData);
       setUser(data);
-      // Update local storage as well to keep data persistent
       localStorage.setItem('user', JSON.stringify(data));
       toast.success('Profile updated successfully');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Update failed');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      return toast.error('File too large. Max 5MB');
+    }
+
+    const uploadData = new FormData();
+    uploadData.append('avatar', file);
+
+    setAvatarLoading(true);
+    try {
+      const { data } = await api.post('/users/upload-avatar', uploadData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      
+      const updatedUser = { ...user, avatar: data.avatar };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setFormData(prev => ({ ...prev, avatar: data.avatar }));
+      toast.success('Profile picture updated');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Upload failed');
+    } finally {
+      setAvatarLoading(false);
     }
   };
 
@@ -73,13 +104,26 @@ const Profile = () => {
             <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6 mb-8 relative z-10">
               <div className="relative group/avatar">
                 <div className="w-32 h-32 rounded-3xl bg-gradient-to-tr from-primary-600 to-primary-400 flex items-center justify-center text-white text-5xl font-bold shadow-2xl overflow-hidden border-4 border-secondary transition-transform group-hover/avatar:scale-105">
-                  {formData.avatar ? (
+                  {avatarLoading ? (
+                    <Loader2 className="w-10 h-10 animate-spin opacity-50" />
+                  ) : formData.avatar ? (
                     <img src={formData.avatar} alt={formData.name} className="w-full h-full object-cover" />
                   ) : (
                     formData.name.charAt(0).toUpperCase()
                   )}
                 </div>
-                <button className="absolute -bottom-2 -right-2 p-2.5 bg-primary-600 text-white rounded-2xl shadow-xl hover:bg-primary-700 transition-all active:scale-90 border-4 border-secondary">
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleAvatarUpload} 
+                  accept="image/*" 
+                  className="hidden" 
+                />
+                <button 
+                  onClick={() => fileInputRef.current.click()}
+                  disabled={avatarLoading}
+                  className="absolute -bottom-2 -right-2 p-2.5 bg-primary-600 text-white rounded-2xl shadow-xl hover:bg-primary-700 transition-all active:scale-90 border-4 border-secondary disabled:opacity-50"
+                >
                   <Camera size={18} />
                 </button>
               </div>
@@ -110,7 +154,7 @@ const Profile = () => {
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full pl-12 pr-4 py-3 bg-background border border-border-color rounded-2xl focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all shadow-sm"
+                      className="w-full pl-12 pr-4 py-3 bg-background border border-border-color rounded-2xl text-text-primary dark:text-white font-medium focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all shadow-sm"
                       placeholder="Your full name"
                     />
                   </div>
@@ -135,7 +179,7 @@ const Profile = () => {
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full pl-12 pr-4 py-3 bg-background border border-border-color rounded-2xl focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all shadow-sm"
+                      className="w-full pl-12 pr-4 py-3 bg-background border border-border-color rounded-2xl text-text-primary dark:text-white font-medium focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all shadow-sm"
                       placeholder="+1 (555) 000-0000"
                     />
                   </div>
@@ -148,7 +192,7 @@ const Profile = () => {
                       type="text"
                       value={formData.department}
                       onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                      className="w-full pl-12 pr-4 py-3 bg-background border border-border-color rounded-2xl focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all shadow-sm"
+                      className="w-full pl-12 pr-4 py-3 bg-background border border-border-color rounded-2xl text-text-primary dark:text-white font-medium focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all shadow-sm"
                       placeholder="e.g. Engineering, Sales"
                     />
                   </div>
@@ -166,7 +210,7 @@ const Profile = () => {
                     value={formData.bio}
                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                     rows={4}
-                    className="w-full pl-12 pr-4 py-3 bg-background border border-border-color rounded-2xl focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all shadow-sm resize-none"
+                    className="w-full pl-12 pr-4 py-3 bg-background border border-border-color rounded-2xl text-text-primary dark:text-white font-medium focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all shadow-sm resize-none"
                     placeholder="Brief description of your role and expertise..."
                   />
                 </div>
@@ -206,7 +250,7 @@ const Profile = () => {
                   type="password"
                   value={passwordData.currentPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                  className="w-full px-5 py-3 bg-background border border-border-color rounded-2xl focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 outline-none transition-all shadow-sm"
+                  className="w-full px-5 py-3 bg-background border border-border-color rounded-2xl text-text-primary dark:text-white font-medium focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 outline-none transition-all shadow-sm"
                 />
               </div>
               <div className="space-y-2">
@@ -215,7 +259,7 @@ const Profile = () => {
                   type="password"
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                  className="w-full px-5 py-3 bg-background border border-border-color rounded-2xl focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 outline-none transition-all shadow-sm"
+                  className="w-full px-5 py-3 bg-background border border-border-color rounded-2xl text-text-primary dark:text-white font-medium focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 outline-none transition-all shadow-sm"
                 />
               </div>
               <div className="space-y-2">
@@ -224,7 +268,7 @@ const Profile = () => {
                   type="password"
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                  className="w-full px-5 py-3 bg-background border border-border-color rounded-2xl focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 outline-none transition-all shadow-sm"
+                  className="w-full px-5 py-3 bg-background border border-border-color rounded-2xl text-text-primary dark:text-white font-medium focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 outline-none transition-all shadow-sm"
                 />
               </div>
 

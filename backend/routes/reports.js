@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
 const { submitReport, getReports, markAsRead, uploadReportFile, deleteReport } = require('../controllers/reportController');
-const upload = require('../middleware/upload');
+const { upload } = require('../middleware/upload');
 
 router.use(protect);
 

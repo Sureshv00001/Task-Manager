@@ -5,7 +5,7 @@ const commentRoutes = require('./comments');
 // Re-route into other resource routers
 router.use('/:taskId/comments', commentRoutes);
 const { protect, authorize } = require('../middleware/auth');
-const upload = require('../middleware/upload');
+const { upload } = require('../middleware/upload');
 const {
   createTask, getTasks, getTaskById, updateTask, updateTaskStatus,
   uploadTaskFile, submitTask, reviewTask, deleteTask, getDashboardStats, downloadTaskFile,

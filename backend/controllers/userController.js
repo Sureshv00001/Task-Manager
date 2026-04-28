@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Task = require('../models/Task');
 const { getOnlineUsers } = require('../utils/socket');
+const { uploadToCloudinary } = require('../utils/cloudinary');
 
 // Create user
 exports.createUser = async (req, res) => {
@@ -265,5 +266,27 @@ exports.updatePassword = async (req, res) => {
     res.json({ message: 'Password updated successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Upload Avatar
+exports.uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'Please upload a file' });
+    }
+
+    const result = await uploadToCloudinary(req.file.buffer);
+    const user = await User.findById(req.user._id);
+    user.avatar = result.secure_url;
+    await user.save();
+
+    res.json({
+      message: 'Avatar uploaded successfully',
+      avatar: user.avatar
+    });
+  } catch (error) {
+    console.error('Avatar upload error:', error);
+    res.status(500).json({ message: 'Avatar upload failed' });
   }
 };
